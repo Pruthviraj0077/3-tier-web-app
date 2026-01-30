@@ -5,50 +5,50 @@ provider "aws" {
 # --------------------------
 # VPC and Networking
 # --------------------------
-resource "aws_vpc" "devopsshack_vpc" {
+resource "aws_vpc" "pruthviraj_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "devopsshack-vpc"
+    Name = "pruthviraj-vpc"
   }
 }
 
-resource "aws_subnet" "devopsshack_subnet" {
+resource "aws_subnet" "pruthviraj_subnet" {
   count                   = 2
-  vpc_id                  = aws_vpc.devopsshack_vpc.id
-  cidr_block              = cidrsubnet(aws_vpc.devopsshack_vpc.cidr_block, 8, count.index)
+  vpc_id                  = aws_vpc.pruthviraj_vpc.id
+  cidr_block              = cidrsubnet(aws_vpc.pruthviraj_vpc.cidr_block, 8, count.index)
   availability_zone       = element(["ap-south-1a", "ap-south-1b"], count.index)
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "devopsshack-subnet-${count.index}"
+    Name = "pruthviraj-subnet-${count.index}"
   }
 }
 
-resource "aws_internet_gateway" "devopsshack_igw" {
-  vpc_id = aws_vpc.devopsshack_vpc.id
+resource "aws_internet_gateway" "pruthviraj_igw" {
+  vpc_id = aws_vpc.pruthviraj_vpc.id
 }
 
-resource "aws_route_table" "devopsshack_route_table" {
-  vpc_id = aws_vpc.devopsshack_vpc.id
+resource "aws_route_table" "pruthviraj_route_table" {
+  vpc_id = aws_vpc.pruthviraj_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.devopsshack_igw.id
+    gateway_id = aws_internet_gateway.pruthviraj_igw.id
   }
 }
 
-resource "aws_route_table_association" "devopsshack_association" {
+resource "aws_route_table_association" "pruthviraj_association" {
   count          = 2
-  subnet_id      = aws_subnet.devopsshack_subnet[count.index].id
-  route_table_id = aws_route_table.devopsshack_route_table.id
+  subnet_id      = aws_subnet.pruthviraj_subnet[count.index].id
+  route_table_id = aws_route_table.pruthviraj_route_table.id
 }
 
 # --------------------------
 # Security Groups
 # --------------------------
-resource "aws_security_group" "devopsshack_cluster_sg" {
-  vpc_id = aws_vpc.devopsshack_vpc.id
+resource "aws_security_group" "pruthviraj_cluster_sg" {
+  vpc_id = aws_vpc.pruthviraj_vpc.id
 
   egress {
     from_port   = 0
@@ -58,12 +58,12 @@ resource "aws_security_group" "devopsshack_cluster_sg" {
   }
 
   tags = {
-    Name = "devopsshack-cluster-sg"
+    Name = "pruthviraj-cluster-sg"
   }
 }
 
-resource "aws_security_group" "devopsshack_node_sg" {
-  vpc_id = aws_vpc.devopsshack_vpc.id
+resource "aws_security_group" "pruthviraj_node_sg" {
+  vpc_id = aws_vpc.pruthviraj_vpc.id
 
   ingress {
     from_port   = 22
@@ -80,15 +80,15 @@ resource "aws_security_group" "devopsshack_node_sg" {
   }
 
   tags = {
-    Name = "devopsshack-node-sg"
+    Name = "pruthviraj-node-sg"
   }
 }
 
 # --------------------------
 # IAM Roles for EKS
 # --------------------------
-resource "aws_iam_role" "devopsshack_cluster_role" {
-  name = "devopsshack-cluster-role"
+resource "aws_iam_role" "pruthviraj_cluster_role" {
+  name = "pruthviraj-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -100,13 +100,13 @@ resource "aws_iam_role" "devopsshack_cluster_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "devopsshack_cluster_role_policy" {
-  role       = aws_iam_role.devopsshack_cluster_role.name
+resource "aws_iam_role_policy_attachment" "pruthviraj_cluster_role_policy" {
+  role       = aws_iam_role.pruthviraj_cluster_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-resource "aws_iam_role" "devopsshack_node_group_role" {
-  name = "devopsshack-node-group-role"
+resource "aws_iam_role" "pruthviraj_node_group_role" {
+  name = "pruthviraj-node-group-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -118,46 +118,46 @@ resource "aws_iam_role" "devopsshack_node_group_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "devopsshack_node_group_role_policy" {
-  role       = aws_iam_role.devopsshack_node_group_role.name
+resource "aws_iam_role_policy_attachment" "pruthviraj_node_group_role_policy" {
+  role       = aws_iam_role.pruthviraj_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "devopsshack_node_group_cni_policy" {
-  role       = aws_iam_role.devopsshack_node_group_role.name
+resource "aws_iam_role_policy_attachment" "pruthviraj_node_group_cni_policy" {
+  role       = aws_iam_role.pruthviraj_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-resource "aws_iam_role_policy_attachment" "devopsshack_node_group_registry_policy" {
-  role       = aws_iam_role.devopsshack_node_group_role.name
+resource "aws_iam_role_policy_attachment" "pruthviraj_node_group_registry_policy" {
+  role       = aws_iam_role.pruthviraj_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_iam_role_policy_attachment" "devopsshack_node_group_ebs_policy" {
-  role       = aws_iam_role.devopsshack_node_group_role.name
+resource "aws_iam_role_policy_attachment" "pruthviraj_node_group_ebs_policy" {
+  role       = aws_iam_role.pruthviraj_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
 # --------------------------
 # EKS Cluster
 # --------------------------
-resource "aws_eks_cluster" "devopsshack" {
-  name     = "devopsshack-cluster"
-  role_arn = aws_iam_role.devopsshack_cluster_role.arn
+resource "aws_eks_cluster" "pruthviraj" {
+  name     = "pruthviraj-cluster"
+  role_arn = aws_iam_role.pruthviraj_cluster_role.arn
 
   vpc_config {
-    subnet_ids         = aws_subnet.devopsshack_subnet[*].id
-    security_group_ids = [aws_security_group.devopsshack_cluster_sg.id]
+    subnet_ids         = aws_subnet.pruthviraj_subnet[*].id
+    security_group_ids = [aws_security_group.pruthviraj_cluster_sg.id]
   }
 
-  depends_on = [aws_iam_role_policy_attachment.devopsshack_cluster_role_policy]
+  depends_on = [aws_iam_role_policy_attachment.pruthviraj_cluster_role_policy]
 }
 
 # --------------------------
 # OIDC Provider (for IRSA)
 # --------------------------
 data "aws_eks_cluster" "this" {
-  name = aws_eks_cluster.devopsshack.name
+  name = aws_eks_cluster.pruthviraj.name
 }
 
 data "tls_certificate" "eks" {
@@ -202,7 +202,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
 # EKS Addon (EBS CSI)
 # --------------------------
 resource "aws_eks_addon" "ebs_csi_driver" {
-  cluster_name             = aws_eks_cluster.devopsshack.name
+  cluster_name             = aws_eks_cluster.pruthviraj.name
   addon_name               = "aws-ebs-csi-driver"
   service_account_role_arn = aws_iam_role.ebs_csi_irsa.arn
 
@@ -215,11 +215,11 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 # --------------------------
 # EKS Node Group
 # --------------------------
-resource "aws_eks_node_group" "devopsshack" {
-  cluster_name    = aws_eks_cluster.devopsshack.name
-  node_group_name = "devopsshack-node-group"
-  node_role_arn   = aws_iam_role.devopsshack_node_group_role.arn
-  subnet_ids      = aws_subnet.devopsshack_subnet[*].id
+resource "aws_eks_node_group" "pruthviraj" {
+  cluster_name    = aws_eks_cluster.pruthviraj.name
+  node_group_name = "pruthviraj-node-group"
+  node_role_arn   = aws_iam_role.pruthviraj_node_group_role.arn
+  subnet_ids      = aws_subnet.pruthviraj_subnet[*].id
 
   scaling_config {
     desired_size = 2
@@ -231,13 +231,13 @@ resource "aws_eks_node_group" "devopsshack" {
 
   remote_access {
     ec2_ssh_key               = var.ssh_key_name
-    source_security_group_ids = [aws_security_group.devopsshack_node_sg.id]
+    source_security_group_ids = [aws_security_group.pruthviraj_node_sg.id]
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.devopsshack_node_group_role_policy,
-    aws_iam_role_policy_attachment.devopsshack_node_group_cni_policy,
-    aws_iam_role_policy_attachment.devopsshack_node_group_registry_policy,
-    aws_iam_role_policy_attachment.devopsshack_node_group_ebs_policy
+    aws_iam_role_policy_attachment.pruthviraj_node_group_role_policy,
+    aws_iam_role_policy_attachment.pruthviraj_node_group_cni_policy,
+    aws_iam_role_policy_attachment.pruthviraj_node_group_registry_policy,
+    aws_iam_role_policy_attachment.pruthviraj_node_group_ebs_policy
   ]
 }
